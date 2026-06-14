@@ -34,7 +34,7 @@
             </div>
             
             <div id="search-result-container" class="hidden mt-6 p-5 bg-slate-950/60 border border-slate-700 rounded-lg animate-fade-in">
-                </div>
+            </div>
         </div>
 
         <div id="status-container" class="text-center py-12">
@@ -43,7 +43,7 @@
             <div id="debug-info" class="hidden mt-4 mx-auto max-w-xl p-4 bg-slate-800 border border-red-500/30 rounded-lg text-left text-xs font-mono text-red-300 overflow-x-auto"></div>
         </div>
 
-        <div id="leaderboard-container" class="hidden bg-slate-800 rounded-xl shadow-2xl overflow-hidden border border-slate-700">
+        <div id="leaderboard-container" class="hidden bg-slate-800 rounded-xl shadow-2xl overflow-hidden border border-slate-700 mb-8">
             <div class="p-4 bg-slate-750 border-b border-slate-700 font-bold text-sm tracking-wide text-slate-300 uppercase">
                 🔥 TOP 20 OUTLET TERATAS
             </div>
@@ -60,13 +60,67 @@
                 </tbody>
             </table>
         </div>
+
+        <div class="bg-slate-800 rounded-xl border border-slate-700 shadow-xl p-6">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-700 pb-4 mb-6 gap-3">
+                <h2 class="text-xl font-bold text-amber-400 flex items-center gap-2">
+                    📢 PENGUMUMAN & MEKANISME PROGRAM
+                </h2>
+                <span class="bg-emerald-500/10 text-emerald-400 text-xs font-bold px-3 py-1 rounded-full border border-emerald-500/20 w-fit animate-pulse">
+                    🟢 Program Berjalan
+                </span>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div class="bg-slate-900/60 p-4 rounded-lg border border-slate-750">
+                    <div class="text-amber-400 text-2xl font-bold mb-1">📅 Periode</div>
+                    <p class="text-sm font-semibold text-white">01 Juni - 30 Juni 2026</p>
+                    <p class="text-xs text-slate-400 mt-1">Pemenang akan divalidasi dan diumumkan pada akhir periode program.</p>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-lg border border-slate-750">
+                    <div class="text-amber-400 text-2xl font-bold mb-1">🎯 Parameter</div>
+                    <p class="text-sm font-semibold text-white">Total Transaksi (Trx)</p>
+                    <p class="text-xs text-slate-400 mt-1">Peringkat dihitung murni berdasarkan akumulasi jumlah sukses transaksi melalui MENU TELKOMSEL paket terbaik.</p>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-lg border border-slate-750">
+                    <div class="text-amber-400 text-2xl font-bold mb-1">🎁 Total Hadiah</div>
+                    <p class="text-sm font-semibold text-emerald-400">Jutaan Rupiah</p>
+                    <p class="text-xs text-slate-400 mt-1">Apresiasi saldo & reward eksklusif untuk outlet dengan performa terbaik.</p>
+                </div>
+            </div>
+
+            <div class="mb-6">
+                <h3 class="text-sm font-bold text-slate-300 uppercase tracking-wider mb-3">📋 Alur Kompetisi</h3>
+                <ol class="space-y-3 text-sm text-slate-300">
+                    <li class="flex gap-3">
+                        <span class="flex items-center justify-center bg-amber-500 text-slate-950 font-extrabold rounded-full h-6 w-6 text-xs flex-shrink-0">1</span>
+                        <span>Seluruh outlet aktif otomatis terdaftar dalam program racing ini tanpa perlu pendaftaran manual.</span>
+                    </li>
+                    <li class="flex gap-3">
+                        <span class="flex items-center justify-center bg-amber-500 text-slate-950 font-extrabold rounded-full h-6 w-6 text-xs flex-shrink-0">2</span>
+                        <span>Tingkatkan terus transaksi harian Anda untuk mendongkrak posisi peringkat di papan klasemen.</span>
+                    </li>
+                    <li class="flex gap-3">
+                        <span class="flex items-center justify-center bg-amber-500 text-slate-950 font-extrabold rounded-full h-6 w-6 text-xs flex-shrink-0">3</span>
+                        <span>Gunakan fitur pencarian di atas untuk memantau posisi rank Anda di antara seluruh total peserta.</span>
+                    </li>
+                </ol>
+            </div>
+
+            <div class="bg-slate-950/50 p-4 rounded-lg border border-slate-750 text-xs text-slate-400 space-y-2">
+                <div class="font-bold text-slate-300 uppercase tracking-wider mb-1 text-xs">⚠️ Syarat & Ketentuan Tambahan:</div>
+                <p>• Jika terdapat total transaksi yang **sama persis** di akhir periode, urutan peringkat akan ditentukan berdasarkan outlet yang mencapai target transaksi tersebut terlebih dahulu.</p>
+                <p>• Data di dashboard ini diperbarui secara berkala. Segala bentuk kecurangan atau transaksi tidak wajar akan didiskualifikasi secara sepihak oleh sistem.</p>
+                <p>• Keputusan panitia penyelenggara bersifat mutlak serta tidak dapat diganggu gugat.</p>
+            </div>
+        </div>
+
     </main>
 
     <script>
         const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/1MpDK4B8KepYv3IvEMoGj9eTQfti_vPXSJCDoqnSp8Yc/export?format=csv';
         const cleanKey = (str) => str.toLowerCase().replace(/\s+/g, '').trim();
 
-        // Variabel global untuk menyimpan data seluruh outlet setelah di-fetch
         let globalAllOutlets = []; 
         let targetNama = '';
         let targetId = '';
@@ -89,7 +143,6 @@
             return { data: result, headers: cleanHeaders, originalHeaders: originalHeaders };
         }
 
-        // Format Sensor ID (Contoh: ok**01)
         function maskIdOutlet(idStr) {
             if (!idStr) return '-';
             const str = String(idStr).trim();
@@ -123,7 +176,6 @@
                 targetId = cleanKey('Id Outlet');
                 targetTrx = cleanKey('Jumlah Trx');
 
-                // Urutkan SELURUH data berdasarkan Transaksi Terbesar
                 globalAllOutlets.sort((a, b) => {
                     const trxA = parseInt(String(a[targetTrx]).replace(/[^0-9]/g, '')) || 0;
                     const trxB = parseInt(String(b[targetTrx]).replace(/[^0-9]/g, '')) || 0;
@@ -133,7 +185,6 @@
                 const tableBody = document.getElementById('table-body');
                 tableBody.innerHTML = ''; 
 
-                // Tampilkan hanya TOP 20 di tabel utama
                 globalAllOutlets.slice(0, 20).forEach((outlet, index) => {
                     const rank = index + 1;
                     let rankBadge = `<span class="font-bold text-slate-400">${rank}</span>`;
@@ -159,10 +210,9 @@
                 document.getElementById('leaderboard-container').classList.remove('hidden');
                 updateTimestamp();
 
-                // Jika user sebelumnya sudah mencari data, refresh juga hasil pencariannya
                 const currentSearch = document.getElementById('search-input').value;
                 if (currentSearch.trim() !== "") {
-                    searchOutlet(true); // silent refresh tanpa memicu scroll/alert
+                    searchOutlet(true); 
                 }
 
             } catch (error) {
@@ -172,7 +222,6 @@
             }
         }
 
-        // FUNGSI UNTUK MENCARI ID OUTLET SECARA DINAMIS
         function searchOutlet(isSilent = false) {
             const inputVal = document.getElementById('search-input').value.trim().toLowerCase();
             const resultContainer = document.getElementById('search-result-container');
@@ -187,7 +236,6 @@
                 return;
             }
 
-            // Cari index / posisi outlet di dalam array yang sudah terurut
             const totalOutlet = globalAllOutlets.length;
             const foundIndex = globalAllOutlets.findIndex(item => String(item[targetId]).toLowerCase().trim() === inputVal);
 
@@ -199,7 +247,6 @@
                 const rawTrx = parseInt(String(outletData[targetTrx]).replace(/[^0-9]/g, '')) || 0;
                 const maskedId = maskIdOutlet(outletData[targetId]);
 
-                // Desain box hasil pencarian jika ID ditemukan
                 resultContainer.innerHTML = `
                     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                         <div>
@@ -215,7 +262,6 @@
                     </div>
                 `;
             } else {
-                // Jendela informasi jika ID tidak ditemukan
                 resultContainer.innerHTML = `
                     <div class="text-center py-2 text-red-400 font-semibold flex items-center justify-center gap-2">
                         ❌ ID Outlet "${inputVal.toUpperCase()}" tidak ditemukan dalam database racing.
@@ -224,7 +270,6 @@
             }
         }
 
-        // Trigger pencarian juga bisa menggunakan tombol 'Enter' pada keyboard
         document.getElementById('search-input').addEventListener('keypress', function (e) {
             if (e.key === 'Enter') {
                 searchOutlet();
@@ -232,7 +277,7 @@
         });
 
         document.addEventListener('DOMContentLoaded', fetchLeaderboardData);
-        setInterval(fetchLeaderboardData, 60000); // Sinkronisasi otomatis data per 1 menit
+        setInterval(fetchLeaderboardData, 60000); 
     </script>
 </body>
 </html>
