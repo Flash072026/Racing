@@ -61,6 +61,17 @@
             return { data: result, headers: cleanHeaders, originalHeaders: originalHeaders };
         }
 
+        // Fungsi baru untuk menyensor ID Outlet
+        function maskIdOutlet(idStr) {
+            if (!idStr) return '-';
+            const str = String(idStr).trim();
+            if (str.length <= 3) return str; // Jika ID pendek, tampilkan apa adanya
+            
+            const visiblePart = str.slice(0, 3); // Ambil 3 karakter pertama
+            const maskedPart = '*'.repeat(str.length - 3); // Buat tanda * sebanyak sisa karakter
+            return visiblePart + maskedPart;
+        }
+
         async function fetchLeaderboardData() {
             try {
                 const response = await fetch(`${SHEET_CSV_URL}&cachebuster=${new Date().getTime()}`);
@@ -91,11 +102,15 @@
                     else if (rank === 3) rankBadge = `<span class="bg-amber-700 text-white px-2.5 py-1 rounded-full font-black">🥉 3</span>`;
 
                     const rawTrx = parseInt(String(outlet[targetTrx]).replace(/[^0-9]/g, '')) || 0;
+                    
+                    // Memproses ID Outlet melalui fungsi sensor
+                    const maskedId = maskIdOutlet(outlet[targetId]);
+
                     tableBody.innerHTML += `
                         <tr class="${rowBg}">
                             <td class="py-4 px-6 text-center">${rankBadge}</td>
                             <td class="py-4 px-6 font-medium text-white">${outlet[targetNama] || '-'}</td>
-                            <td class="py-4 px-6 text-slate-400 font-mono">${outlet[targetId] || '-'}</td>
+                            <td class="py-4 px-6 text-slate-400 font-mono">${maskedId}</td>
                             <td class="py-4 px-6 text-right text-emerald-400 font-bold">${rawTrx.toLocaleString('id-ID')} Trx</td>
                         </tr>`;
                 });
