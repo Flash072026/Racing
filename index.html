@@ -6,7 +6,7 @@
     <title>Dashboard Racing Outlet - Mobile Optimized</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=400;600;700;800&display=swap');
         body { 
             font-family: 'Plus Jakarta Sans', sans-serif; 
             -webkit-tap-highlight-color: transparent;
@@ -58,10 +58,10 @@
                 🔥 TOP 20 OUTLET TERATAS
             </div>
             <div class="overflow-x-auto custom-scrollbar">
-                <table class="w-full text-left border-collapse min-w-[500px] sm:min-w-0">
+                <table class="w-full text-left border-collapse min-w-[500px] sm:min-w-0 table-fixed sm:table-auto">
                     <thead>
                         <tr class="bg-slate-700 text-slate-200 uppercase text-[11px] sm:text-xs tracking-wider">
-                            <th class="py-3 px-3 sm:px-6 text-center w-16 sm:w-20">Rank</th>
+                            <th class="py-3 px-3 sm:px-6 text-center w-20">Rank</th>
                             <th class="py-3 px-3 sm:px-6">Nama Outlet</th>
                             <th class="py-3 px-3 sm:px-6 w-28 sm:w-auto">ID Outlet</th>
                             <th class="py-3 px-3 sm:px-6 text-right w-28 sm:w-auto">Jumlah Trx</th>
@@ -197,19 +197,20 @@
 
                 globalAllOutlets.slice(0, 20).forEach((outlet, index) => {
                     const rank = index + 1;
-                    let rankBadge = `<span class="font-bold text-slate-400 text-xs sm:text-sm">${rank}</span>`;
+                    let rankBadge = `<span class="font-bold text-slate-400 text-sm">${rank}</span>`;
                     let rowBg = "hover:bg-slate-750/50 transition-colors";
                     
-                    if (rank === 1) rankBadge = `<span class="bg-amber-500 text-slate-950 px-2 py-0.5 rounded-full text-xs font-black">🥇 1</span>`;
-                    else if (rank === 2) rankBadge = `<span class="bg-slate-300 text-slate-950 px-2 py-0.5 rounded-full text-xs font-black">🥈 2</span>`;
-                    else if (rank === 3) rankBadge = `<span class="bg-amber-700 text-white px-2 py-0.5 rounded-full text-xs font-black">🥉 3</span>`;
+                    // Modifikasi Badge: Menggunakan inline-flex, ukuran dimensi statis, text-xs tetap agar pas di mobile android
+                    if (rank === 1) rankBadge = `<span class="inline-flex items-center justify-center bg-amber-500 text-slate-950 w-14 py-0.5 rounded-full text-[11px] font-black shadow-sm">🥇 1</span>`;
+                    else if (rank === 2) rankBadge = `<span class="inline-flex items-center justify-center bg-slate-300 text-slate-950 w-14 py-0.5 rounded-full text-[11px] font-black shadow-sm">🥈 2</span>`;
+                    else if (rank === 3) rankBadge = `<span class="inline-flex items-center justify-center bg-amber-700 text-white w-14 py-0.5 rounded-full text-[11px] font-black shadow-sm">🥉 3</span>`;
 
                     const rawTrx = parseInt(String(outlet[targetTrx]).replace(/[^0-9]/g, '')) || 0;
                     const maskedId = maskIdOutlet(outlet[targetId]);
 
                     tableBody.innerHTML += `
                         <tr class="${rowBg}">
-                            <td class="py-3 px-3 sm:px-6 text-center">${rankBadge}</td>
+                            <td class="py-3 px-2 text-center">${rankBadge}</td>
                             <td class="py-3 px-3 sm:px-6 font-medium text-white break-words max-w-[120px] sm:max-w-none">${outlet[targetNama] || '-'}</td>
                             <td class="py-3 px-3 sm:px-6 text-slate-400 font-mono text-xs sm:text-sm">${maskedId}</td>
                             <td class="py-3 px-3 sm:px-6 text-right text-emerald-400 font-bold text-xs sm:text-sm">${rawTrx.toLocaleString('id-ID')} Trx</td>
@@ -283,7 +284,7 @@
         document.getElementById('search-input').addEventListener('keypress', function (e) {
             if (e.key === 'Enter') {
                 searchOutlet();
-                document.getElementById('search-input').blur(); // Menutup keyboard HP setelah enter
+                document.getElementById('search-input').blur();
             }
         });
 
