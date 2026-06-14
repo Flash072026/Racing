@@ -14,7 +14,10 @@
 
     <header class="bg-slate-800 border-b border-slate-700 py-6 text-center shadow-lg">
         <h1 class="text-3xl font-extrabold tracking-wider text-amber-400 uppercase">🏆 RACING OUTLET LEADERBOARD 🏆</h1>
-        <p class="text-slate-400 mt-2 text-sm">Data diperbarui otomatis • Menampilkan 20 Outlet Teratas</p>
+        <p class="text-slate-400 mt-2 text-sm">Data diperbarui otomatis dari Google Sheets • Menampilkan 20 Outlet Teratas</p>
+        <p id="last-update" class="text-emerald-400 mt-1 text-xs font-semibold flex justify-center items-center gap-1">
+            🕒 Menghubungkan ke server...
+        </p>
     </header>
 
     <main class="max-w-4xl mx-auto px-4 mt-8">
@@ -61,21 +64,32 @@
             return { data: result, headers: cleanHeaders, originalHeaders: originalHeaders };
         }
 
-        // Fungsi yang dikunci khusus untuk menghasilkan format ok**01
         function maskIdOutlet(idStr) {
             if (!idStr) return '-';
             const str = String(idStr).trim();
-            
-            // Jika ID memiliki panjang 6 karakter atau lebih standar (seperti ok0001)
             if (str.length >= 6) {
-                const startPart = str.slice(0, 2);      // Ambil 2 karakter pertama (contoh: "ok")
-                const endPart = str.slice(-2);         // Ambil 2 karakter terakhir (contoh: "01")
-                return startPart + '**' + endPart;     // Gabungkan dengan bintang di tengah -> "ok**01"
+                const startPart = str.slice(0, 2);
+                const endPart = str.slice(-2);
+                return startPart + '**' + endPart;
             }
-            
-            // Antisipasi jika ada ID yang sangat pendek (di bawah 4 karakter)
             if (str.length <= 2) return str;
             return str.slice(0, 1) + '**' + str.slice(-1);
+        }
+
+        // Fungsi baru untuk mendapatkan waktu saat ini dengan format lokal (WIB)
+        function updateTimestamp() {
+            const now = new Date();
+            const options = { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric', 
+                hour: '2-digit', 
+                minute: '2-digit', 
+                second: '2-digit',
+                timeZoneName: 'short'
+            };
+            const formattedDate = now.toLocaleDateString('id-ID', options);
+            document.getElementById('last-update').innerHTML = `🕒 Terakhir Diperbarui: ${formattedDate}`;
         }
 
         async function fetchLeaderboardData() {
@@ -118,15 +132,24 @@
                             <td class="py-4 px-6 text-right text-emerald-400 font-bold">${rawTrx.toLocaleString('id-ID')} Trx</td>
                         </tr>`;
                 });
+                
                 document.getElementById('status-container').classList.add('hidden');
                 document.getElementById('leaderboard-container').classList.remove('hidden');
+                
+                // Panggil fungsi timestamp setelah data sukses dimuat
+                updateTimestamp();
+
             } catch (error) {
                 document.getElementById('status-text').innerHTML = `<span class="text-red-400 font-bold text-lg">⚠️ Gagal Memuat Data</span>`;
                 document.getElementById('debug-info').classList.remove('hidden');
                 document.getElementById('debug-info').innerText = `Log Error:\n${error.message}`;
+                document.getElementById('last-update').innerHTML = `<span class="text-red-400">⚠️ Gagal memperbarui waktu</span>`;
             }
         }
+        
         document.addEventListener('DOMContentLoaded', fetchLeaderboardData);
+        // Otomatis refresh data dan waktu setiap 60 detik (1 menit)
+        setInterval(fetchLeaderboardData, 60000);
     </script>
 </body>
 </html>
