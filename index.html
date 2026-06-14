@@ -55,7 +55,7 @@
 
         <div id="leaderboard-container" class="hidden bg-slate-800 rounded-xl shadow-2xl overflow-hidden border border-slate-700">
             <div class="p-3.5 bg-slate-750 border-b border-slate-700 font-bold text-xs sm:text-sm tracking-wide text-slate-300 uppercase">
-                🔥 TOP 20 OUTLET TERATAS
+                🔥 TOP 10 OUTLET TERATAS
             </div>
             <div class="overflow-x-auto custom-scrollbar">
                 <table class="w-full text-left border-collapse min-w-[500px] sm:min-w-0 table-fixed sm:table-auto">
@@ -197,7 +197,7 @@
                 const tableBody = document.getElementById('table-body');
                 tableBody.innerHTML = ''; 
 
-                globalAllOutlets.slice(0, 20).forEach((outlet, index) => {
+                globalAllOutlets.slice(0, 10).forEach((outlet, index) => {
                     const rank = index + 1;
                     let rankBadge = `<span class="font-bold text-slate-400 text-sm">${rank}</span>`;
                     let rowBg = "hover:bg-slate-750/50 transition-colors";
