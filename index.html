@@ -58,7 +58,7 @@
             <div class="overflow-x-auto custom-scrollbar">
                 <table class="w-full text-left border-collapse min-w-[500px] sm:min-w-0 table-fixed sm:table-auto">
                     <thead>
-                        <tr class="bg-slate-700 text-slate-200 uppercase text-[11px] sm:text-xs tracking-wider">
+                        <tr id="table-header" class="bg-slate-700 text-slate-200 uppercase text-[11px] sm:text-xs tracking-wider">
                             <th class="py-3 px-3 sm:px-6 text-center w-20">Rank</th>
                             <th class="py-3 px-3 sm:px-6">Nama Outlet</th>
                             <th class="py-3 px-3 sm:px-6 w-28 sm:w-auto">ID Outlet</th>
@@ -180,6 +180,17 @@
                 const response = await fetch(`${SHEET_CSV_URL}&cachebuster=${new Date().getTime()}`);
                 const csvText = await response.text();
                 const parsed = csvToObjects(csvText);
+                
+        // UPDATE JUDUL KOLOM BERDASARKAN GOOGLE SHEET
+			const tableHeader = document.getElementById('table-header');
+			if (parsed.originalHeaders && parsed.originalHeaders.length >= 3) {
+				tableHeader.innerHTML = `
+					<th class="py-3 px-3 sm:px-6 text-center w-20">Rank</th>
+					<th class="py-3 px-3 sm:px-6">${parsed.originalHeaders[0]}</th>
+					<th class="py-3 px-3 sm:px-6 w-28 sm:w-auto">${parsed.originalHeaders[1]}</th>
+					<th class="py-3 px-3 sm:px-6 text-right w-28 sm:w-auto">${parsed.originalHeaders[2]}</th>
+			`;
+		}
                 
                 globalAllOutlets = parsed.data;
                 targetNama = cleanKey('Nama Outlet');
