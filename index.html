@@ -138,24 +138,33 @@
         let targetId = '';
         let targetTrx = '';
 
-        // STRUKTUR DATA: BARIS 1 TANGGAL UPDATE, BARIS 2 HEADERS, BARIS 3 DAN SETERUSNYA DATA OUTLET
+        // PERBAIKAN UTAMA: LOGIKA PEMBACAAN BARIS 1 YANG FLEKSIBEL
         function csvToObjects(csvText) {
             const lines = csvText.split(/\r?\n/).filter(line => line.trim() !== '');
             if (lines.length < 2) return { data: [], headers: [], originalHeaders: [], updateDateText: '' };
             
-            // Mengambil info tanggal di Baris 1 (index 0) Kolom ke-2
-            const firstLineCols = lines[0].split(',');
+            // 1. Ambil baris pertama dan bersihkan tanda kutip/spasi
+            const firstLineRaw = lines[0].replace(/^"|"$/g, '').trim();
             let updateDateText = '';
-            if (firstLineCols[1]) {
-                updateDateText = firstLineCols[1].replace(/^"|"$/g, '').trim();
+
+            // Cek apakah Baris 1 Model Gambar 1 (ada koma pemisah kolom) atau Model Gambar 2
+            if (firstLineRaw.includes('","') || firstLineRaw.includes(',')) {
+                // Model Gambar 1: Kolom A dan B terpisah
+                const firstLineCols = firstLineRaw.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(v => v.trim().replace(/^"|"$/g, ''));
+                // Ambil text tanggalnya saja (biasanya di kolom ke-2 / index 1)
+                updateDateText = firstLineCols[1] ? firstLineCols[1] : firstLineCols[0];
+            } else {
+                // Model Gambar 2: Menumpuk di Kolom A ("UPDATE 13-06-2026")
+                // Kita bersihkan kata "UPDATE" atau "Update Data :" agar tersisa tanggalnya saja
+                updateDateText = firstLineRaw.replace(/update\s*data\s*:/i, '').replace(/update/i, '').trim();
             }
 
-            // Mengambil judul kolom asli di Baris 2 (index 1)
+            // 2. Ambil Nama Kolom/Header dari Baris 2 (Index 1)
             const originalHeaders = lines[1].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(h => h.trim().replace(/^"|"$/g, ''));
             const cleanHeaders = originalHeaders.map(cleanKey);
             
             const result = [];
-            // Data dimulai dari Baris 3 (index 2)
+            // Data dimulai dari Baris 3 (Index 2)
             for (let i = 2; i < lines.length; i++) {
                 const currentline = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(v => v.trim().replace(/^"|"$/g, ''));
                 const obj = {};
@@ -183,7 +192,7 @@
                 const csvText = await response.text();
                 const parsed = csvToObjects(csvText);
                 
-                // Sinkronisasi otomatis teks tanggal di <header>
+                // Sinkronisasi info tanggal di header HTML secara otomatis
                 if (parsed.updateDateText) {
                     const headerSub = document.querySelector('header p');
                     if (headerSub) {
@@ -191,7 +200,7 @@
                     }
                 }
 
-                // Sinkronisasi dinamis judul kolom tabel di HTML
+                // UPDATE JUDUL KOLOM BERDASARKAN GOOGLE SHEET (BARIS 2)
                 const tableHeader = document.getElementById('table-header');
                 if (tableHeader && parsed.originalHeaders && parsed.originalHeaders.length >= 3) {
                     tableHeader.innerHTML = `
@@ -203,13 +212,11 @@
                 }
                 
                 globalAllOutlets = parsed.data;
-                
-                // Menentukan key pencarian setelah dibersihkan oleh cleanKey()
                 targetNama = parsed.headers[0] || 'namaoutlet';
                 targetId = parsed.headers[1] || 'idoutlet';
                 targetTrx = parsed.headers[2] || 'jumlahtrx';
 
-                // Sorting berdasarkan transaksi terbanyak
+                // Urutkan data berdasarkan Jumlah Trx terbesar
                 globalAllOutlets.sort((a, b) => {
                     const trxA = parseInt(String(a[targetTrx]).replace(/[^0-9]/g, '')) || 0;
                     const trxB = parseInt(String(b[targetTrx]).replace(/[^0-9]/g, '')) || 0;
@@ -219,7 +226,6 @@
                 const tableBody = document.getElementById('table-body');
                 tableBody.innerHTML = ''; 
 
-                // Tampilkan Top 10 data teratas
                 globalAllOutlets.slice(0, 10).forEach((outlet, index) => {
                     const rank = index + 1;
                     let rankBadge = `<span class="font-bold text-slate-400 text-sm">${rank}</span>`;
@@ -244,7 +250,6 @@
                 document.getElementById('status-container').classList.add('hidden');
                 document.getElementById('leaderboard-container').classList.remove('hidden');
 
-                // Menjaga agar hasil pencarian tetap update jika sistem auto-refresh
                 const currentSearch = document.getElementById('search-input').value;
                 if (currentSearch.trim() !== "") {
                     searchOutlet(true); 
@@ -272,7 +277,6 @@
             }
 
             const totalOutlet = globalAllOutlets.length;
-            // Mencari kecocokan ID Outlet yang diinput user
             const foundIndex = globalAllOutlets.findIndex(item => String(item[targetId]).toLowerCase().trim() === inputVal);
 
             resultContainer.classList.remove('hidden');
@@ -300,13 +304,12 @@
             } else {
                 resultContainer.innerHTML = `
                     <div class="text-center py-1 text-red-400 text-xs font-semibold">
-                        ❌ ID Outlet "${inputVal.toUpperCase()}" belum melakukan transaksi atau ID salah.
+                        ❌ ID Outlet "${inputVal.toUpperCase()}" Belum pernah transaksi menu telkomsel paket terbaik.
                     </div>
                 `;
             }
         }
 
-        // Jalankan pencarian jika menekan tombol Enter di keyboard ponsel/PC
         document.getElementById('search-input').addEventListener('keypress', function (e) {
             if (e.key === 'Enter') {
                 searchOutlet();
@@ -314,9 +317,7 @@
             }
         });
 
-        // Event listener saat halaman pertama kali dibuka
         document.addEventListener('DOMContentLoaded', fetchLeaderboardData);
-        // Otomatis refresh data setiap 60 detik (1 menit) secara background
         setInterval(fetchLeaderboardData, 60000); 
     </script>
 </body>
