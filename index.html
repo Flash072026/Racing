@@ -138,13 +138,26 @@
         let targetId = '';
         let targetTrx = '';
 
+        // FUNGSI DIUBAH: MENYESUAIKAN STRUKTUR GOOGLE SHEET (HEADER DI BARIS 2)
         function csvToObjects(csvText) {
             const lines = csvText.split(/\r?\n/).filter(line => line.trim() !== '');
-            if (lines.length === 0) return [];
-            const originalHeaders = lines[0].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(h => h.trim().replace(/^"|"$/g, ''));
+            // Validasi jika baris kurang dari 2 (Baris 1: Info update, Baris 2: Nama Kolom)
+            if (lines.length < 2) return { data: [], headers: [], originalHeaders: [], updateDateText: '' };
+            
+            // Ekstrak teks tanggal dari Baris 1 (Index 0)
+            const firstLineCols = lines[0].split(',');
+            let updateDateText = '';
+            if (firstLineCols[1]) {
+                updateDateText = firstLineCols[1].replace(/^"|"$/g, '').trim();
+            }
+
+            // Ambil Nama Kolom/Header dari Baris 2 (Index 1)
+            const originalHeaders = lines[1].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(h => h.trim().replace(/^"|"$/g, ''));
             const cleanHeaders = originalHeaders.map(cleanKey);
+            
             const result = [];
-            for (let i = 1; i < lines.length; i++) {
+            // Data dimulai dari Baris 3 (Index 2)
+            for (let i = 2; i < lines.length; i++) {
                 const currentline = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(v => v.trim().replace(/^"|"$/g, ''));
                 const obj = {};
                 cleanHeaders.forEach((header, index) => {
@@ -152,7 +165,7 @@
                 });
                 result.push(obj);
             }
-            return { data: result, headers: cleanHeaders, originalHeaders: originalHeaders };
+            return { data: result, headers: cleanHeaders, originalHeaders: originalHeaders, updateDateText: updateDateText };
         }
 
         function maskIdOutlet(idStr) {
@@ -165,38 +178,37 @@
             return str.slice(0, 1) + '**' + str.slice(-1);
         }
 
-        function updateTimestamp() {
-            const now = new Date();
-            const options = { 
-                year: 'numeric', month: 'long', day: 'numeric', 
-                hour: '2-digit', minute: '2-digit', second: '2-digit',
-                timeZoneName: 'short'
-            };
-            document.getElementById('last-update').innerHTML = `🕒 Terakhir Diperbarui: ${now.toLocaleDateString('id-ID', options)}`;
-        }
-
         async function fetchLeaderboardData() {
             try {
                 const response = await fetch(`${SHEET_CSV_URL}&cachebuster=${new Date().getTime()}`);
                 const csvText = await response.text();
                 const parsed = csvToObjects(csvText);
                 
-        // UPDATE JUDUL KOLOM BERDASARKAN GOOGLE SHEET
-			const tableHeader = document.getElementById('table-header');
-			if (parsed.originalHeaders && parsed.originalHeaders.length >= 3) {
-				tableHeader.innerHTML = `
-					<th class="py-3 px-3 sm:px-6 text-center w-20">Rank</th>
-					<th class="py-3 px-3 sm:px-6">${parsed.originalHeaders[0]}</th>
-					<th class="py-3 px-3 sm:px-6 w-28 sm:w-auto">${parsed.originalHeaders[1]}</th>
-					<th class="py-3 px-3 sm:px-6 text-right w-28 sm:w-auto">${parsed.originalHeaders[2]}</th>
-			`;
-		}
+                // Sinkronisasi info tanggal di header HTML secara otomatis jika ditemukan dari Google Sheet
+                if (parsed.updateDateText) {
+                    const headerSub = document.querySelector('header p');
+                    if (headerSub) {
+                        headerSub.innerText = `Update Transaksi Terakhir: ${parsed.updateDateText}`;
+                    }
+                }
+
+                // UPDATE JUDUL KOLOM BERDASARKAN GOOGLE SHEET (BARIS 2)
+                const tableHeader = document.getElementById('table-header');
+                if (tableHeader && parsed.originalHeaders && parsed.originalHeaders.length >= 3) {
+                    tableHeader.innerHTML = `
+                        <th class="py-3 px-3 sm:px-6 text-center w-20">Rank</th>
+                        <th class="py-3 px-3 sm:px-6">${parsed.originalHeaders[0]}</th>
+                        <th class="py-3 px-3 sm:px-6 w-28 sm:w-auto">${parsed.originalHeaders[1]}</th>
+                        <th class="py-3 px-3 sm:px-6 text-right w-28 sm:w-auto">${parsed.originalHeaders[2]}</th>
+                    `;
+                }
                 
                 globalAllOutlets = parsed.data;
                 targetNama = cleanKey('Nama Outlet');
                 targetId = cleanKey('Id Outlet');
                 targetTrx = cleanKey('Jumlah Trx');
 
+                // Urutkan data berdasarkan Jumlah Trx terbesar
                 globalAllOutlets.sort((a, b) => {
                     const trxA = parseInt(String(a[targetTrx]).replace(/[^0-9]/g, '')) || 0;
                     const trxB = parseInt(String(b[targetTrx]).replace(/[^0-9]/g, '')) || 0;
@@ -211,7 +223,6 @@
                     let rankBadge = `<span class="font-bold text-slate-400 text-sm">${rank}</span>`;
                     let rowBg = "hover:bg-slate-750/50 transition-colors";
                     
-                    // Modifikasi Badge: Menggunakan inline-flex, ukuran dimensi statis, text-xs tetap agar pas di mobile android
                     if (rank === 1) rankBadge = `<span class="inline-flex items-center justify-center bg-amber-500 text-slate-950 w-14 py-0.5 rounded-full text-[11px] font-black shadow-sm">🥇 1</span>`;
                     else if (rank === 2) rankBadge = `<span class="inline-flex items-center justify-center bg-slate-300 text-slate-950 w-14 py-0.5 rounded-full text-[11px] font-black shadow-sm">🥈 2</span>`;
                     else if (rank === 3) rankBadge = `<span class="inline-flex items-center justify-center bg-amber-700 text-white w-14 py-0.5 rounded-full text-[11px] font-black shadow-sm">🥉 3</span>`;
@@ -230,7 +241,6 @@
                 
                 document.getElementById('status-container').classList.add('hidden');
                 document.getElementById('leaderboard-container').classList.remove('hidden');
-                updateTimestamp();
 
                 const currentSearch = document.getElementById('search-input').value;
                 if (currentSearch.trim() !== "") {
